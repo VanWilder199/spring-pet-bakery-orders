@@ -23,7 +23,6 @@ public class OrderMapper {
         OrderEntity orderEntity = new OrderEntity();
         orderEntity.setOrderItemEntities(productEntities);
         productEntities.forEach(p -> p.setOrder(orderEntity));
-        orderEntity.setStatus(order.status());
         return orderEntity;
     }
 
@@ -32,8 +31,9 @@ public class OrderMapper {
 
         return new Order(
                 orderEntity.getId(),
-                productEntities,
-                orderEntity.getStatus()
+                null,
+                null,
+                productEntities
         );
     }
 }

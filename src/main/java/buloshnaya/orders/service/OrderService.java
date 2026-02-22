@@ -2,6 +2,7 @@ package buloshnaya.orders.service;
 
 import buloshnaya.orders.entity.OrderEntity;
 import buloshnaya.orders.filter.SearchFilter;
+import buloshnaya.orders.kafka.dto.NotificationType;
 import buloshnaya.orders.kafka.dto.OrderItemDto;
 import buloshnaya.orders.kafka.dto.OrderKafkaProducer;
 import buloshnaya.orders.kafka.dto.OrderNotification;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,10 +36,12 @@ public class OrderService {
                 .map(mapper::toModel);
     }
 
+    @Transactional
     public Order createOrder(Order order) {
-        OrderEntity mapperEntity =mapper.toEntity(order);
-        logger.info("Creating order: {}", mapperEntity);
+        OrderEntity mapperEntity = mapper.toEntity(order);
+        mapperEntity.setStatus(NotificationType.CONFIRMED);
 
+        logger.info("Creating order: {}", mapperEntity);
 
         OrderEntity savedEntityOrder = orderRepository.save(mapperEntity);
 
@@ -47,8 +51,15 @@ public class OrderService {
                 .map(e -> new OrderItemDto(e.getProductId(), e.getProductName(), e.getPrice(), e.getQuantity()))
                 .toList();
 
-        OrderNotification orderNotification = new OrderNotification(savedEntityOrder.getId(), items);
+        OrderNotification orderNotification = new OrderNotification(
+                savedEntityOrder.getId(),
+                order.userId(),
+                order.email(),
+                NotificationType.CONFIRMED,
+                items
+        );
 
+        // TODO implement Transactional outbox
         orderKafkaProducer.sendOrderNotification(orderNotification);
 
         logger.info("kafka sendOrderNotification sent: {}", orderNotification.toString());

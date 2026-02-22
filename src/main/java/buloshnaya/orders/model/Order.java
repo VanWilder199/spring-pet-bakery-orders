@@ -9,8 +9,10 @@ public record Order(
         @Null
         String id,
         @NotNull
-        List<Product> product,
+        String userId,
         @NotNull
-        String status
+        String email,
+        @NotNull
+        List<Product> product
 ) {
 }

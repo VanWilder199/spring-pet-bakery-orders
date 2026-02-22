@@ -1,5 +1,6 @@
 package buloshnaya.orders.entity;
 
+import buloshnaya.orders.kafka.dto.NotificationType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,8 +26,9 @@ public class OrderEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItemEntities;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status;
+    private NotificationType status;
 
     @Column(name = "created_at")
     @CreationTimestamp
