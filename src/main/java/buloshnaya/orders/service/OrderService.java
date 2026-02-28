@@ -1,14 +1,16 @@
 package buloshnaya.orders.service;
 
 import buloshnaya.orders.entity.OrderEntity;
+import buloshnaya.orders.entity.OutBoxEventEntity;
 import buloshnaya.orders.filter.SearchFilter;
 import buloshnaya.orders.kafka.dto.NotificationType;
-import buloshnaya.orders.kafka.dto.OrderItemDto;
-import buloshnaya.orders.kafka.dto.OrderKafkaProducer;
 import buloshnaya.orders.kafka.dto.OrderNotification;
 import buloshnaya.orders.mapper.OrderMapper;
+import buloshnaya.orders.mapper.OrderNotificationMapper;
 import buloshnaya.orders.model.Order;
 import buloshnaya.orders.repository.OrderRepository;
+import buloshnaya.orders.repository.OutBoxEventRepository;
+import buloshnaya.orders.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +25,10 @@ public class OrderService {
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     private final OrderRepository orderRepository;
+    private final OutBoxEventRepository outBoxEventRepository;
     private final OrderMapper mapper;
-    private final OrderKafkaProducer orderKafkaProducer;
+    private final OrderNotificationMapper notificationMapper;
+    private final JsonUtil jsonUtil;
 
 
     public Page<Order> searchOrderByFilter(SearchFilter filter) {
@@ -47,22 +51,16 @@ public class OrderService {
 
         logger.info("savedEntityOrder order: {}", savedEntityOrder.toString());
 
-        var items = savedEntityOrder.getOrderItemEntities().stream()
-                .map(e -> new OrderItemDto(e.getProductId(), e.getProductName(), e.getPrice(), e.getQuantity()))
-                .toList();
+        OrderNotification orderNotification = notificationMapper.toNotification(
+                savedEntityOrder, order, NotificationType.CONFIRMED);
 
-        OrderNotification orderNotification = new OrderNotification(
-                savedEntityOrder.getId(),
-                order.userId(),
-                order.email(),
-                NotificationType.CONFIRMED,
-                items
-        );
+        OutBoxEventEntity outBoxEventEntity = new OutBoxEventEntity();
+        outBoxEventEntity.setOrderId(savedEntityOrder.getId());
+        outBoxEventEntity.setPayload(jsonUtil.toJson(orderNotification));
 
-        // TODO implement Transactional outbox
-        orderKafkaProducer.sendOrderNotification(orderNotification);
+        outBoxEventRepository.save(outBoxEventEntity);
 
-        logger.info("kafka sendOrderNotification sent: {}", orderNotification.toString());
+        logger.info("OutBoxEventEntity saved: {}", outBoxEventEntity.toString());
 
         return mapper.toModel(savedEntityOrder);
     }

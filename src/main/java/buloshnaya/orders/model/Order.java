@@ -1,5 +1,6 @@
 package buloshnaya.orders.model;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
@@ -11,6 +12,7 @@ public record Order(
         @NotNull
         String userId,
         @NotNull
+        @Email
         String email,
         @NotNull
         List<Product> product
