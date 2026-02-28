@@ -7,7 +7,10 @@ import buloshnaya.orders.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -20,20 +23,13 @@ public class OutboxEventService {
     private final JsonUtil jsonUtil;
 
 
-    public void publishEvent(OutBoxEventEntity event) {
+    public CompletableFuture<SendResult<String, OrderNotification>> publishEvent(OutBoxEventEntity event) {
         logger.info("Processing outbox event id={}, orderId={}", event.getId(), event.getOrderId());
 
-        try {
-            orderKafkaProducer.sendOrderNotification(jsonUtil.fromJson(event.getPayload(), OrderNotification.class));
+        OrderNotification notification = jsonUtil.fromJson(event.getPayload(), OrderNotification.class);
 
-            logger.info("Published outbox event id={}", event.getId());
+        return orderKafkaProducer.sendOrderNotification(event.getOrderId(),notification);
 
-        } catch (Exception e) {
-            logger.error("Failed outbox event id={}, retryCount={}: {}",
-                    event.getId(), event.getRetryCount(), e.getMessage());
-
-            throw e;
-        }
 
     }
 }

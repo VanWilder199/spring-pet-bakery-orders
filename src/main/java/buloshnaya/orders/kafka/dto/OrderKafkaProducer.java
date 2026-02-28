@@ -4,11 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class OrderKafkaProducer {
@@ -23,15 +22,9 @@ public class OrderKafkaProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendOrderNotification(OrderNotification orderNotification) {
-        try {
-            kafkaTemplate.send(orderNotificationTopic, orderNotification).get(5, TimeUnit.SECONDS);
+    public CompletableFuture<SendResult<String, OrderNotification>> sendOrderNotification(String orderId, OrderNotification orderNotification) {
+
             logger.info("Sent order notification: {}", orderNotification);
-        } catch (ExecutionException | TimeoutException e) {
-            throw new RuntimeException("Failed to send order notification to Kafka", e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Interrupted while sending order notification to Kafka", e);
-        }
+       return kafkaTemplate.send(orderNotificationTopic, orderId, orderNotification);
     }
 }

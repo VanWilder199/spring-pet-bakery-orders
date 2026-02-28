@@ -23,6 +23,8 @@ public class KafkaProducerConfig {
     )  {
         Map<String, Object> configProperties = new HashMap<>();
         configProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        configProperties.put(ProducerConfig.LINGER_MS_CONFIG, 50);
+        configProperties.put(ProducerConfig.BATCH_SIZE_CONFIG, 32768);
 
         JsonSerializer<OrderNotification> serializer = new JsonSerializer<>(objectMapper);
         serializer.setAddTypeInfo(false);
