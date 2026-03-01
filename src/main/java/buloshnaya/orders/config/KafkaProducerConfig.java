@@ -2,10 +2,13 @@ package buloshnaya.orders.config;
 
 import buloshnaya.orders.kafka.dto.OrderNotification;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -16,6 +19,16 @@ import java.util.Map;
 
 @Configuration
 public class KafkaProducerConfig {
+
+
+
+    @Bean
+    public NewTopic orderNotificationTopic(
+            @Value("${kafka.topic.order-notification}") String topicName,
+            @Value("${kafka.topic.order-notification.partitions}") int partitions
+    ) {
+        return TopicBuilder.name(topicName).partitions(partitions).replicas(1).build();
+    }
 
     @Bean
     public ProducerFactory<String, OrderNotification> producerFactory(
