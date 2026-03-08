@@ -26,13 +26,12 @@ public class OrderMapper {
         return orderEntity;
     }
 
-    public Order toModel(OrderEntity orderEntity) {
+    public Order toModel(OrderEntity orderEntity, String email) {
         List<Product> productEntities = orderEntity.getOrderItemEntities().stream().map(productMapper::toModel).toList();
 
         return new Order(
                 orderEntity.getId(),
-                null,
-                null,
+                email,
                 productEntities
         );
     }

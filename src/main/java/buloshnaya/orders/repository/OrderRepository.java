@@ -1,6 +1,7 @@
 package buloshnaya.orders.repository;
 
 import buloshnaya.orders.entity.OrderEntity;
+import buloshnaya.orders.kafka.dto.NotificationType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,11 +15,12 @@ import java.util.UUID;
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     @Query("""
-            SELECT o from OrderEntity o
-            WHERE (:status IS NULL OR o.status = :status)
+            SELECT o FROM OrderEntity o
+            WHERE o.status = :status AND o.userId = :userId
             """)
     Page<OrderEntity> searchAllByFilter(
+            @Param("userId") UUID userId,
             Pageable pageable,
-            @Param("status") String status
+            @Param("status") NotificationType status
     );
 }

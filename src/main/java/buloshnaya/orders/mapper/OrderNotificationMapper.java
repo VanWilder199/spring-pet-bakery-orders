@@ -7,17 +7,19 @@ import buloshnaya.orders.kafka.dto.OrderNotification;
 import buloshnaya.orders.model.Order;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class OrderNotificationMapper {
 
-    public OrderNotification toNotification(OrderEntity orderEntity, Order order, NotificationType type) {
+    public OrderNotification toNotification(UUID userId, OrderEntity orderEntity, Order order, NotificationType type) {
         var items = orderEntity.getOrderItemEntities().stream()
                 .map(e -> new OrderItemDto(e.getProductId(), e.getProductName(), e.getPrice(), e.getQuantity()))
                 .toList();
 
         return new OrderNotification(
                 orderEntity.getId(),
-                order.userId(),
+               userId,
                 order.email(),
                 type,
                 items

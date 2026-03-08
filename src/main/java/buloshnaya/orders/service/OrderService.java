@@ -10,6 +10,7 @@ import buloshnaya.orders.mapper.OrderNotificationMapper;
 import buloshnaya.orders.model.Order;
 import buloshnaya.orders.repository.OrderRepository;
 import buloshnaya.orders.repository.OutBoxEventRepository;
+import buloshnaya.orders.security.UserPrincipal;
 import buloshnaya.orders.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -31,18 +32,20 @@ public class OrderService {
     private final JsonUtil jsonUtil;
 
 
-    public Page<Order> searchOrderByFilter(SearchFilter filter) {
+    public Page<Order> searchOrderByFilter(UserPrincipal userPrincipal, SearchFilter filter) {
          Pageable pageable = Pageable.ofSize(filter.size()).withPage(filter.page());
 
          logger.info("Searching orders with filter: {}", filter);
 
-        return orderRepository.searchAllByFilter(pageable, filter.status())
-                .map(mapper::toModel);
+         // TODO fix email (get from token)
+        return orderRepository.searchAllByFilter(userPrincipal.id(), pageable, filter.status())
+                .map(m -> mapper.toModel(m, null));
     }
 
     @Transactional
-    public Order createOrder(Order order) {
+    public Order createOrder(UserPrincipal userPrincipal, Order order) {
         OrderEntity mapperEntity = mapper.toEntity(order);
+        mapperEntity.setUserId(userPrincipal.id());
         mapperEntity.setStatus(NotificationType.CONFIRMED);
 
         logger.info("Creating order: {}", mapperEntity);
@@ -52,6 +55,7 @@ public class OrderService {
         logger.info("savedEntityOrder order: {}", savedEntityOrder.toString());
 
         OrderNotification orderNotification = notificationMapper.toNotification(
+                userPrincipal.id(),
                 savedEntityOrder, order, NotificationType.CONFIRMED);
 
         OutBoxEventEntity outBoxEventEntity = new OutBoxEventEntity();
@@ -62,7 +66,7 @@ public class OrderService {
 
         logger.info("OutBoxEventEntity saved: {}", outBoxEventEntity.toString());
 
-        return mapper.toModel(savedEntityOrder);
+        return mapper.toModel(savedEntityOrder, order.email());
     }
 
 }
