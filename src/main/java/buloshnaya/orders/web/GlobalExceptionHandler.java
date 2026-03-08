@@ -30,6 +30,7 @@ public class GlobalExceptionHandler {
                 .body(errorResponseDto);
     }
 
+    @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleEntityNotFound (EntityNotFoundException e) {
         logger.error("Entity not found", e);
 

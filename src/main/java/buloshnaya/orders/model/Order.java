@@ -10,8 +10,6 @@ public record Order(
         @Null
         String id,
         @NotNull
-        String userId,
-        @NotNull
         @Email
         String email,
         @NotNull

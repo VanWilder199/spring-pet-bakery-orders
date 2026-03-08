@@ -1,7 +1,9 @@
 package buloshnaya.orders.controller;
 
 import buloshnaya.orders.filter.SearchFilter;
+import buloshnaya.orders.kafka.dto.NotificationType;
 import buloshnaya.orders.model.Order;
+import buloshnaya.orders.security.UserPrincipal;
 import buloshnaya.orders.service.OrderService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -9,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,11 +28,12 @@ public class OrderController {
 
     @GetMapping("/orders")
     public ResponseEntity<Page<Order>> getOrders(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam(value = "size", required = false) Integer size,
             @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "status", required = false) String status
+            @RequestParam(value = "status", required = false) NotificationType status
     ) {
-        Page<Order> orders = orderService.searchOrderByFilter(new SearchFilter(
+        Page<Order> orders = orderService.searchOrderByFilter(userPrincipal,new SearchFilter(
                     size,
                     page,
                     status
@@ -39,10 +43,11 @@ public class OrderController {
 
     @PostMapping("/orders")
     public ResponseEntity<Order> getOrders(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
            @RequestBody @Valid Order order
     ) {
         logger.info("Creating order: {}", order);
-        Order savedOrder = orderService.createOrder(order);
+        Order savedOrder = orderService.createOrder(userPrincipal, order);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
     }

@@ -11,6 +11,7 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -21,13 +22,16 @@ public class OrderEntity {
     @UuidGenerator
     private String id;
 
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
     // BatchSize resolved N+1 problem (should remember every time)
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItemEntities;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
+    @Column(name = "status", nullable = false)
     private NotificationType status;
 
     @Column(name = "created_at")
