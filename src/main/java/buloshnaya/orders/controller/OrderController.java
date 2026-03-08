@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1")
 public class OrderController {
@@ -41,6 +43,21 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @GetMapping("admin/orders/{userId}")
+    public ResponseEntity<Page<Order>> getOrdersByAdmin(
+            @PathVariable("userId") UUID userId,
+            @RequestParam(value = "size", required = false) Integer size,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "status", required = false) NotificationType status
+    ) {
+        Page<Order> orders = orderService.searchOrderByFilterForAdmin(userId,new SearchFilter(
+                size,
+                page,
+                status
+        ));
+        return ResponseEntity.ok(orders);
+    }
+
     @PostMapping("/orders")
     public ResponseEntity<Order> getOrders(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -53,24 +70,40 @@ public class OrderController {
     }
 
 
-//    @GetMapping("/orders/{id}")
-//    public ResponseEntity<Order> getOrderById(@PathVariable("id") Long id) {
-//        Order order = orderService.getOrderById(id);
-//        return ResponseEntity.ok(order);
-//    }
-//
+    @GetMapping("/orders/{id}")
+    public ResponseEntity<Order> getOrderById(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable("id") UUID id) {
+        Order order = orderService.getOrderById(userPrincipal,id);
+        return ResponseEntity.ok(order);
+    }
+ //   TODO  USER can update only List<Product>
 //    @PutMapping("/orders/{id}")
 //    public ResponseEntity<Order> updateOrder(
+//            @AuthenticationPrincipal UserPrincipal userPrincipal,
 //            @PathVariable("id") Long id,
 //            @RequestBody Order order
 //    ) {
-//        Order updatedOrder = orderService.updateOrder(id, order);
+//        Order updatedOrder = orderService.updateOrder(userPrincipal, id, order);
 //        return ResponseEntity.ok(updatedOrder);
 //    }
-//
-//    @DeleteMapping("/orders/{id}")
-//    public ResponseEntity<Void> deleteOrder(@PathVariable("id") Long id) {
-//        orderService.deleteOrder(id);
-//        return ResponseEntity.noContent().build();
+//      // TODO  ADMIN can update all fields
+//    @PutMapping("/orders/{id}")
+//    public ResponseEntity<Order> updateOrder(
+//            @AuthenticationPrincipal UserPrincipal userPrincipal,
+//            @PathVariable("id") Long id,
+//            @RequestBody Order order
+//    ) {
+//        Order updatedOrder = orderService.updateOrder(userPrincipal, id, order);
+//        return ResponseEntity.ok(updatedOrder);
 //    }
+
+    // TODO implement hidden delete order (we should recover order if user want)
+    @DeleteMapping("/orders/{id}")
+    public ResponseEntity<Void> deleteOrder(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable("id") UUID id) {
+        orderService.deleteOrder(userPrincipal,id);
+        return ResponseEntity.noContent().build();
+    }
 }

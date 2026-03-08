@@ -20,7 +20,7 @@ import java.util.UUID;
 public class OrderEntity {
     @Id
     @UuidGenerator
-    private String id;
+    private UUID id;
 
     @Column(name = "user_id", nullable = false)
     private UUID userId;

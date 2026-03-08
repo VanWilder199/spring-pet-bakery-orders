@@ -7,6 +7,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -22,9 +23,9 @@ public class OrderKafkaProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public CompletableFuture<SendResult<String, OrderNotification>> sendOrderNotification(String orderId, OrderNotification orderNotification) {
+    public CompletableFuture<SendResult<String, OrderNotification>> sendOrderNotification(UUID orderId, OrderNotification orderNotification) {
 
             logger.info("Sent order notification: {}", orderNotification);
-       return kafkaTemplate.send(orderNotificationTopic, orderId, orderNotification);
+       return kafkaTemplate.send(orderNotificationTopic, String.valueOf(orderId), orderNotification);
     }
 }

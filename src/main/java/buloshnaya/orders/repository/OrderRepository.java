@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -23,4 +24,8 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
             Pageable pageable,
             @Param("status") NotificationType status
     );
+
+    Optional<OrderEntity> findByUserIdAndId(UUID userId, UUID id);
+
+    Optional<OrderEntity> deleteByUserIdAndId(UUID userId, UUID id);
 }

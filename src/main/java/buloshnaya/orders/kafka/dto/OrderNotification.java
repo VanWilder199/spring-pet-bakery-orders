@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record OrderNotification(
-    String orderId,
+        UUID orderId,
     UUID userId,
     String email,
     NotificationType notificationType,

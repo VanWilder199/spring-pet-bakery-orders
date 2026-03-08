@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "outbox_event")
@@ -18,7 +19,7 @@ public class OutBoxEventEntity {
     private Long id;
 
     @Column(name = "order_id", nullable = false)
-    private String orderId;
+    private UUID orderId;
 
     @Column(name = "payload", columnDefinition = "TEXT", nullable = false)
     private String payload;

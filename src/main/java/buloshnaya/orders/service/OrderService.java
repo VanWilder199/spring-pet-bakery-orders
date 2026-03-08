@@ -12,6 +12,7 @@ import buloshnaya.orders.repository.OrderRepository;
 import buloshnaya.orders.repository.OutBoxEventRepository;
 import buloshnaya.orders.security.UserPrincipal;
 import buloshnaya.orders.util.JsonUtil;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +42,16 @@ public class OrderService {
 
          // TODO fix email (get from token)
         return orderRepository.searchAllByFilter(userPrincipal.id(), pageable, filter.status())
+                .map(m -> mapper.toModel(m, null));
+    }
+
+    public Page<Order> searchOrderByFilterForAdmin(UUID userId, SearchFilter filter) {
+        Pageable pageable = Pageable.ofSize(filter.size()).withPage(filter.page());
+
+        logger.info("Searching orders with filter by Admin: {}", filter);
+
+        // TODO fix email (get from token)
+        return orderRepository.searchAllByFilter(userId, pageable, filter.status())
                 .map(m -> mapper.toModel(m, null));
     }
 
@@ -69,4 +82,17 @@ public class OrderService {
         return mapper.toModel(savedEntityOrder, order.email());
     }
 
+    public Order getOrderById(UserPrincipal userPrincipal, UUID id) {
+        OrderEntity orderEntity = orderRepository.findByUserIdAndId(userPrincipal.id(), id).orElseThrow(
+                () ->  new EntityNotFoundException("Order not found")
+        );
+
+        return mapper.toModel(orderEntity, null);
+    }
+
+    @Transactional
+    public void deleteOrder(UserPrincipal userPrincipal, UUID id) {
+        orderRepository.deleteByUserIdAndId(userPrincipal.id(), id)
+                .orElseThrow( () ->  new EntityNotFoundException("Order not found"));
+    }
 }
