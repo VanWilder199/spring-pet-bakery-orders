@@ -3,6 +3,8 @@ package buloshnaya.orders.model;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
+import java.math.BigDecimal;
+
 public record Product(
         @Null
         Long id,
@@ -11,7 +13,7 @@ public record Product(
         @NotNull
         String productName,
         @NotNull
-        Integer price,
+        BigDecimal price,
         @NotNull
         Integer quantity
 ) {

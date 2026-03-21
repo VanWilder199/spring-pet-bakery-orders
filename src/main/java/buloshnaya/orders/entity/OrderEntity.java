@@ -34,6 +34,9 @@ public class OrderEntity {
     @Column(name = "status", nullable = false)
     private NotificationType status;
 
+    @Column(name = "hidden", nullable = false)
+    private boolean hidden = false;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createdAt;

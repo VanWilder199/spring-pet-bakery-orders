@@ -1,8 +1,10 @@
 package buloshnaya.orders.kafka.dto;
 
+import java.math.BigDecimal;
+
 public record OrderItemDto(
     String productId,
     String productName,
-    Integer price,
+    BigDecimal price,
     Integer quantity
 ) {}

@@ -35,6 +35,7 @@ public class OrderService {
     private final JsonUtil jsonUtil;
 
 
+    @Transactional(readOnly = true)
     public Page<Order> searchOrderByFilter(UserPrincipal userPrincipal, SearchFilter filter) {
          Pageable pageable = Pageable.ofSize(filter.size()).withPage(filter.page());
 
@@ -45,6 +46,7 @@ public class OrderService {
                 .map(m -> mapper.toModel(m, null));
     }
 
+    @Transactional(readOnly = true)
     public Page<Order> searchOrderByFilterForAdmin(UUID userId, SearchFilter filter) {
         Pageable pageable = Pageable.ofSize(filter.size()).withPage(filter.page());
 
@@ -90,9 +92,8 @@ public class OrderService {
         return mapper.toModel(orderEntity, null);
     }
 
-    @Transactional
     public void deleteOrder(UserPrincipal userPrincipal, UUID id) {
-        orderRepository.deleteByUserIdAndId(userPrincipal.id(), id)
+        orderRepository.hideByUserIdAndId(userPrincipal.id(), id)
                 .orElseThrow( () ->  new EntityNotFoundException("Order not found"));
     }
 }

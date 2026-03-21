@@ -1,5 +1,6 @@
 package buloshnaya.orders.controller;
 
+import buloshnaya.orders.annotation.MeasureExecution;
 import buloshnaya.orders.filter.SearchFilter;
 import buloshnaya.orders.kafka.dto.NotificationType;
 import buloshnaya.orders.model.Order;
@@ -28,6 +29,7 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    @MeasureExecution()
     @GetMapping("/orders")
     public ResponseEntity<Page<Order>> getOrders(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -43,6 +45,7 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @MeasureExecution()
     @GetMapping("admin/orders/{userId}")
     public ResponseEntity<Page<Order>> getOrdersByAdmin(
             @PathVariable("userId") UUID userId,
@@ -58,6 +61,7 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @MeasureExecution()
     @PostMapping("/orders")
     public ResponseEntity<Order> getOrders(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -70,6 +74,7 @@ public class OrderController {
     }
 
 
+    @MeasureExecution()
     @GetMapping("/orders/{id}")
     public ResponseEntity<Order> getOrderById(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -98,7 +103,6 @@ public class OrderController {
 //        return ResponseEntity.ok(updatedOrder);
 //    }
 
-    // TODO implement hidden delete order (we should recover order if user want)
     @DeleteMapping("/orders/{id}")
     public ResponseEntity<Void> deleteOrder(
             @AuthenticationPrincipal UserPrincipal userPrincipal,

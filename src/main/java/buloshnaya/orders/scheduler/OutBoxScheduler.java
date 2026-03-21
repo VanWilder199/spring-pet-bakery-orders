@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -34,6 +35,7 @@ public class OutBoxScheduler {
     private Integer batchSize;
 
 
+    @Transactional
     @Scheduled(fixedDelay = 1000)
     public void processOutBoxEvents() {
         List<OutBoxEventEntity> events = outBoxEventRepository

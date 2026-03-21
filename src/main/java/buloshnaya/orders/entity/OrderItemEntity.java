@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -29,7 +30,7 @@ public class OrderItemEntity {
     String productName;
 
     @Column(name = "price")
-    Integer price;
+    BigDecimal price;
 
     @Column(name = "quantity")
     Integer quantity;

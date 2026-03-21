@@ -5,6 +5,7 @@ import buloshnaya.orders.kafka.dto.NotificationType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -27,5 +28,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     Optional<OrderEntity> findByUserIdAndId(UUID userId, UUID id);
 
-    Optional<OrderEntity> deleteByUserIdAndId(UUID userId, UUID id);
+    @Modifying
+    @Query("UPDATE OrderEntity o SET o.hidden = true WHERE o.userId = :userId AND o.id = :id")
+    Optional<OrderEntity> hideByUserIdAndId(@Param("userId") UUID userId, @Param("id") UUID id);
 }
