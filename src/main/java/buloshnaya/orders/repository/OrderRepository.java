@@ -18,7 +18,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     @Query("""
             SELECT o FROM OrderEntity o
-            WHERE o.status = :status AND o.userId = :userId
+             WHERE (:status IS NULL OR o.status = :status) AND o.userId = :userId
             """)
     Page<OrderEntity> searchAllByFilter(
             @Param("userId") UUID userId,
@@ -30,5 +30,5 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     @Modifying
     @Query("UPDATE OrderEntity o SET o.hidden = true WHERE o.userId = :userId AND o.id = :id")
-    Optional<OrderEntity> hideByUserIdAndId(@Param("userId") UUID userId, @Param("id") UUID id);
+    int hideByUserIdAndId(@Param("userId") UUID userId, @Param("id") UUID id);
 }

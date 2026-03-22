@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -84,6 +85,63 @@ public class OrderService {
         return mapper.toModel(savedEntityOrder, order.email());
     }
 
+    @Transactional
+    public Order updateOrder(UserPrincipal userPrincipal, UUID id, Order order) {
+        OrderEntity existingOrderEntity = orderRepository.findByUserIdAndId(userPrincipal.id(), id).orElseThrow(
+                () ->  new EntityNotFoundException("Order not found")
+        );
+
+        OrderEntity newOrderEnitity = mapper.toEntity(order);
+
+        existingOrderEntity.getOrderItemEntities().clear();;
+        existingOrderEntity.getOrderItemEntities().addAll(newOrderEnitity.getOrderItemEntities());
+        existingOrderEntity.setStatus(NotificationType.UPDATED);
+
+        logger.info("Updating order: {}", existingOrderEntity);
+
+        OrderEntity updatedOrderEntity = orderRepository.save(existingOrderEntity);
+
+        logger.info("Updated order: {}", updatedOrderEntity);
+
+        OrderNotification orderNotification = notificationMapper.toNotification(
+                userPrincipal.id(),
+                updatedOrderEntity, order, NotificationType.UPDATED);
+
+        OutBoxEventEntity outBoxEventEntity = new OutBoxEventEntity();
+        outBoxEventEntity.setOrderId(updatedOrderEntity.getId());
+        outBoxEventEntity.setPayload(jsonUtil.toJson(orderNotification));
+
+        outBoxEventRepository.save(outBoxEventEntity);
+
+        logger.info("OutBoxEventEntity saved: {}", outBoxEventEntity.toString());
+
+        return mapper.toModel(updatedOrderEntity, order.email());
+
+    }
+
+    @Transactional
+    public Order updateOrderByAdmin(UserPrincipal userPrincipal,UUID userId, Order order) {
+        OrderEntity existingOrderEntity = orderRepository.findByUserIdAndId(userId, order.id()).orElseThrow(
+                () ->  new EntityNotFoundException("Order not found")
+        );
+
+        OrderEntity newOrderEnitity = mapper.toEntity(order);
+
+        existingOrderEntity.setUserId(newOrderEnitity.getUserId());
+        existingOrderEntity.setStatus(NotificationType.UPDATED);
+        existingOrderEntity.getOrderItemEntities().clear();;
+        existingOrderEntity.getOrderItemEntities().addAll(newOrderEnitity.getOrderItemEntities());
+
+        logger.info("Updating order: {}", existingOrderEntity);
+
+        OrderEntity updatedOrderEntity = orderRepository.save(existingOrderEntity);
+
+        logger.info("Updated order: {}", updatedOrderEntity);
+
+        return mapper.toModel(updatedOrderEntity, order.email());
+    }
+
+    @Transactional(readOnly = true)
     public Order getOrderById(UserPrincipal userPrincipal, UUID id) {
         OrderEntity orderEntity = orderRepository.findByUserIdAndId(userPrincipal.id(), id).orElseThrow(
                 () ->  new EntityNotFoundException("Order not found")
@@ -92,8 +150,10 @@ public class OrderService {
         return mapper.toModel(orderEntity, null);
     }
 
+    @Transactional
     public void deleteOrder(UserPrincipal userPrincipal, UUID id) {
-        orderRepository.hideByUserIdAndId(userPrincipal.id(), id)
-                .orElseThrow( () ->  new EntityNotFoundException("Order not found"));
+        Optional.of(orderRepository.hideByUserIdAndId(userPrincipal.id(), id))
+                .filter(count -> count > 0)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
     }
 }

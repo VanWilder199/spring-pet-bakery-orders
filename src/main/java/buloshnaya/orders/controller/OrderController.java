@@ -29,9 +29,9 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @MeasureExecution()
+    @MeasureExecution
     @GetMapping("/orders")
-    public ResponseEntity<Page<Order>> getOrders(
+    public ResponseEntity<Page<Order>> searchOrderByFilter(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam(value = "size", required = false) Integer size,
             @RequestParam(value = "page", required = false) Integer page,
@@ -45,7 +45,7 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-    @MeasureExecution()
+    @MeasureExecution
     @GetMapping("admin/orders/{userId}")
     public ResponseEntity<Page<Order>> getOrdersByAdmin(
             @PathVariable("userId") UUID userId,
@@ -61,9 +61,9 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-    @MeasureExecution()
+    @MeasureExecution
     @PostMapping("/orders")
-    public ResponseEntity<Order> getOrders(
+    public ResponseEntity<Order> createOrder(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
            @RequestBody @Valid Order order
     ) {
@@ -74,7 +74,7 @@ public class OrderController {
     }
 
 
-    @MeasureExecution()
+    @MeasureExecution
     @GetMapping("/orders/{id}")
     public ResponseEntity<Order> getOrderById(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -83,25 +83,15 @@ public class OrderController {
         return ResponseEntity.ok(order);
     }
  //   TODO  USER can update only List<Product>
-//    @PutMapping("/orders/{id}")
-//    public ResponseEntity<Order> updateOrder(
-//            @AuthenticationPrincipal UserPrincipal userPrincipal,
-//            @PathVariable("id") Long id,
-//            @RequestBody Order order
-//    ) {
-//        Order updatedOrder = orderService.updateOrder(userPrincipal, id, order);
-//        return ResponseEntity.ok(updatedOrder);
-//    }
-//      // TODO  ADMIN can update all fields
-//    @PutMapping("/orders/{id}")
-//    public ResponseEntity<Order> updateOrder(
-//            @AuthenticationPrincipal UserPrincipal userPrincipal,
-//            @PathVariable("id") Long id,
-//            @RequestBody Order order
-//    ) {
-//        Order updatedOrder = orderService.updateOrder(userPrincipal, id, order);
-//        return ResponseEntity.ok(updatedOrder);
-//    }
+    @PutMapping("/orders/{id}")
+    public ResponseEntity<Order> updateOrder(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable("id") UUID id,
+            @RequestBody Order order
+    ) {
+        Order updatedOrder = orderService.updateOrder(userPrincipal, id, order);
+        return ResponseEntity.ok(updatedOrder);
+    }
 
     @DeleteMapping("/orders/{id}")
     public ResponseEntity<Void> deleteOrder(

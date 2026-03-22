@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: orders
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    org.hibernate: WARN
+
+kafka:
+  topic:
+    order-notification: order-notification-topic
+    order-notification.partitions: 4
+
+outbox:
+  max-retry-count: 3
+  batch-size: 20
+
+jwt:
+  secret: a-string-secret-at-least-256-bits-longasflkasdl;fasdklfasdflsdkflasdflk;asdlfasdklfasdklfaskldfklas;dflkasdflkasdflkasdflkasdflasdlfasdklfasklfasldfaskldfaslfaksdlfaklsdflkasdfklsd
