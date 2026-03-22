@@ -42,9 +42,8 @@ public class OrderService {
 
          logger.info("Searching orders with filter: {}", filter);
 
-         // TODO fix email (get from token)
         return orderRepository.searchAllByFilter(userPrincipal.id(), pageable, filter.status())
-                .map(m -> mapper.toModel(m, null));
+                .map(mapper::toModel);
     }
 
     @Transactional(readOnly = true)
@@ -53,9 +52,8 @@ public class OrderService {
 
         logger.info("Searching orders with filter by Admin: {}", filter);
 
-        // TODO fix email (get from token)
         return orderRepository.searchAllByFilter(userId, pageable, filter.status())
-                .map(m -> mapper.toModel(m, null));
+                .map(mapper::toModel);
     }
 
     @Transactional
@@ -71,8 +69,8 @@ public class OrderService {
         logger.info("savedEntityOrder order: {}", savedEntityOrder.toString());
 
         OrderNotification orderNotification = notificationMapper.toNotification(
-                userPrincipal.id(),
-                savedEntityOrder, order, NotificationType.CONFIRMED);
+                userPrincipal,
+                savedEntityOrder, NotificationType.CONFIRMED);
 
         OutBoxEventEntity outBoxEventEntity = new OutBoxEventEntity();
         outBoxEventEntity.setOrderId(savedEntityOrder.getId());
@@ -82,7 +80,7 @@ public class OrderService {
 
         logger.info("OutBoxEventEntity saved: {}", outBoxEventEntity.toString());
 
-        return mapper.toModel(savedEntityOrder, order.email());
+        return mapper.toModel(savedEntityOrder);
     }
 
     @Transactional
@@ -104,8 +102,8 @@ public class OrderService {
         logger.info("Updated order: {}", updatedOrderEntity);
 
         OrderNotification orderNotification = notificationMapper.toNotification(
-                userPrincipal.id(),
-                updatedOrderEntity, order, NotificationType.UPDATED);
+                userPrincipal,
+                updatedOrderEntity, NotificationType.UPDATED);
 
         OutBoxEventEntity outBoxEventEntity = new OutBoxEventEntity();
         outBoxEventEntity.setOrderId(updatedOrderEntity.getId());
@@ -115,7 +113,7 @@ public class OrderService {
 
         logger.info("OutBoxEventEntity saved: {}", outBoxEventEntity.toString());
 
-        return mapper.toModel(updatedOrderEntity, order.email());
+        return mapper.toModel(updatedOrderEntity);
 
     }
 
@@ -138,7 +136,7 @@ public class OrderService {
 
         logger.info("Updated order: {}", updatedOrderEntity);
 
-        return mapper.toModel(updatedOrderEntity, order.email());
+        return mapper.toModel(updatedOrderEntity);
     }
 
     @Transactional(readOnly = true)
@@ -147,7 +145,7 @@ public class OrderService {
                 () ->  new EntityNotFoundException("Order not found")
         );
 
-        return mapper.toModel(orderEntity, null);
+        return mapper.toModel(orderEntity);
     }
 
     @Transactional

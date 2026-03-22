@@ -8,6 +8,7 @@ CREATE TABLE orders (
 
 CREATE TABLE product (
     id BIGSERIAL PRIMARY KEY,
+    order_id UUID NOT NULL REFERENCES orders(id),
     product_id VARCHAR(255) NOT NULL,
     product_name VARCHAR(255) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,

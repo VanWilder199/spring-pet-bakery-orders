@@ -82,7 +82,7 @@ public class OrderController {
         Order order = orderService.getOrderById(userPrincipal,id);
         return ResponseEntity.ok(order);
     }
- //   TODO  USER can update only List<Product>
+
     @PutMapping("/orders/{id}")
     public ResponseEntity<Order> updateOrder(
             @AuthenticationPrincipal UserPrincipal userPrincipal,

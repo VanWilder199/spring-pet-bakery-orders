@@ -1,6 +1,5 @@
 package buloshnaya.orders.model;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 
@@ -10,9 +9,6 @@ import java.util.UUID;
 public record Order(
         @Null
         UUID id,
-        @NotNull
-        @Email
-        String email,
         @NotNull
         List<Product> product
 ) {
