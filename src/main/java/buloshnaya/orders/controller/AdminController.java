@@ -1,10 +1,8 @@
 package buloshnaya.orders.controller;
 
 import buloshnaya.orders.model.Order;
-import buloshnaya.orders.security.UserPrincipal;
 import buloshnaya.orders.service.OrderService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -21,11 +19,10 @@ public class AdminController {
 
     @PutMapping("/orders/{userId}")
     public ResponseEntity<Order> updateOrderByAdmin(
-            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable("userId") UUID userId,
             @RequestBody Order order
     ) {
-        Order updatedOrder = orderService.updateOrderByAdmin(userPrincipal, userId, order);
+        Order updatedOrder = orderService.updateOrderByAdmin(userId, order);
         return ResponseEntity.ok(updatedOrder);
     }
 }

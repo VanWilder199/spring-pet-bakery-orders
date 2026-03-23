@@ -45,3 +45,9 @@ services:
       KAFKA_BROKERCONNECT: kafka:9092
     depends_on:
       - kafka
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+

@@ -10,7 +10,6 @@ import buloshnaya.orders.mapper.OrderNotificationMapper;
 import buloshnaya.orders.model.Order;
 import buloshnaya.orders.repository.OrderRepository;
 import buloshnaya.orders.repository.OutBoxEventRepository;
-import buloshnaya.orders.security.UserPrincipal;
 import buloshnaya.orders.util.JsonUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -37,12 +36,12 @@ public class OrderService {
 
 
     @Transactional(readOnly = true)
-    public Page<Order> searchOrderByFilter(UserPrincipal userPrincipal, SearchFilter filter) {
+    public Page<Order> searchOrderByFilter(UUID userId, SearchFilter filter) {
          Pageable pageable = Pageable.ofSize(filter.size()).withPage(filter.page());
 
          logger.info("Searching orders with filter: {}", filter);
 
-        return orderRepository.searchAllByFilter(userPrincipal.id(), pageable, filter.status())
+        return orderRepository.searchAllByFilter(userId, pageable, filter.status())
                 .map(mapper::toModel);
     }
 
@@ -57,9 +56,9 @@ public class OrderService {
     }
 
     @Transactional
-    public Order createOrder(UserPrincipal userPrincipal, Order order) {
+    public Order createOrder(UUID userId, Order order) {
         OrderEntity mapperEntity = mapper.toEntity(order);
-        mapperEntity.setUserId(userPrincipal.id());
+        mapperEntity.setUserId(userId);
         mapperEntity.setStatus(NotificationType.CONFIRMED);
 
         logger.info("Creating order: {}", mapperEntity);
@@ -69,7 +68,7 @@ public class OrderService {
         logger.info("savedEntityOrder order: {}", savedEntityOrder.toString());
 
         OrderNotification orderNotification = notificationMapper.toNotification(
-                userPrincipal,
+                userId,
                 savedEntityOrder, NotificationType.CONFIRMED);
 
         OutBoxEventEntity outBoxEventEntity = new OutBoxEventEntity();
@@ -84,8 +83,8 @@ public class OrderService {
     }
 
     @Transactional
-    public Order updateOrder(UserPrincipal userPrincipal, UUID id, Order order) {
-        OrderEntity existingOrderEntity = orderRepository.findByUserIdAndId(userPrincipal.id(), id).orElseThrow(
+    public Order updateOrder(UUID userId, UUID id, Order order) {
+        OrderEntity existingOrderEntity = orderRepository.findByUserIdAndId(userId, id).orElseThrow(
                 () ->  new EntityNotFoundException("Order not found")
         );
 
@@ -102,7 +101,7 @@ public class OrderService {
         logger.info("Updated order: {}", updatedOrderEntity);
 
         OrderNotification orderNotification = notificationMapper.toNotification(
-                userPrincipal,
+                userId,
                 updatedOrderEntity, NotificationType.UPDATED);
 
         OutBoxEventEntity outBoxEventEntity = new OutBoxEventEntity();
@@ -118,7 +117,7 @@ public class OrderService {
     }
 
     @Transactional
-    public Order updateOrderByAdmin(UserPrincipal userPrincipal,UUID userId, Order order) {
+    public Order updateOrderByAdmin(UUID userId, Order order) {
         OrderEntity existingOrderEntity = orderRepository.findByUserIdAndId(userId, order.id()).orElseThrow(
                 () ->  new EntityNotFoundException("Order not found")
         );
@@ -140,8 +139,8 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Order getOrderById(UserPrincipal userPrincipal, UUID id) {
-        OrderEntity orderEntity = orderRepository.findByUserIdAndId(userPrincipal.id(), id).orElseThrow(
+    public Order getOrderById(UUID userId, UUID orderId) {
+        OrderEntity orderEntity = orderRepository.findByUserIdAndId(userId, orderId).orElseThrow(
                 () ->  new EntityNotFoundException("Order not found")
         );
 
@@ -149,8 +148,8 @@ public class OrderService {
     }
 
     @Transactional
-    public void deleteOrder(UserPrincipal userPrincipal, UUID id) {
-        Optional.of(orderRepository.hideByUserIdAndId(userPrincipal.id(), id))
+    public void deleteOrder(UUID userId, UUID orderId) {
+        Optional.of(orderRepository.hideByUserIdAndId(userId, orderId))
                 .filter(count -> count > 0)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
     }

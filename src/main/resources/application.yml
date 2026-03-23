@@ -26,6 +26,3 @@ kafka:
 outbox:
   max-retry-count: 3
   batch-size: 20
-
-jwt:
-  secret: a-string-secret-at-least-256-bits-longasflkasdl;fasdklfasdflsdkflasdflk;asdlfasdklfasdklfaskldfklas;dflkasdflkasdflkasdflkasdflasdlfasdklfasklfasldfaskldfaslfaksdlfaklsdflkasdfklsd
