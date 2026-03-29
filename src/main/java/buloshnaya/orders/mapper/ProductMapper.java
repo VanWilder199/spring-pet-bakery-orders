@@ -19,7 +19,6 @@ public class ProductMapper {
 
     public Product toModel(OrderItemEntity productEntity) {
         return new Product(
-                productEntity.getId(),
                 productEntity.getProductId(),
                 productEntity.getProductName(),
                 productEntity.getPrice(),
