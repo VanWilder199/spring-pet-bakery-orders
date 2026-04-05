@@ -22,6 +22,7 @@ kafka:
   topic:
     order-notification: order-notification-topic
     order-notification.partitions: 4
+    warehouse-reserve: warehouse-reserve-topic
 
 outbox:
   max-retry-count: 3

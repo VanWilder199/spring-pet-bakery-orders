@@ -21,6 +21,7 @@ public class OrderMapper {
         List<OrderItemEntity> productEntities = order.product().stream().map(productMapper::toEntity).toList();
 
         OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setStoreId(order.storeId());
         orderEntity.setOrderItemEntities(productEntities);
         productEntities.forEach(p -> p.setOrder(orderEntity));
         return orderEntity;
@@ -31,6 +32,7 @@ public class OrderMapper {
 
         return new Order(
                 orderEntity.getId(),
+                orderEntity.getStoreId(),
                 productEntities
         );
     }

@@ -10,6 +10,8 @@ public record Order(
         @Null
         UUID id,
         @NotNull
+        UUID storeId,
+        @NotNull
         List<Product> product
 ) {
 }

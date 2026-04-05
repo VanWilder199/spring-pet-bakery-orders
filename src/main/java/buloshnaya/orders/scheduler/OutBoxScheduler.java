@@ -1,7 +1,6 @@
 package buloshnaya.orders.scheduler;
 
 import buloshnaya.orders.entity.OutBoxEventEntity;
-import buloshnaya.orders.kafka.dto.OrderNotification;
 import buloshnaya.orders.repository.OutBoxEventRepository;
 import buloshnaya.orders.service.OutboxEventService;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +44,7 @@ public class OutBoxScheduler {
         if (events.isEmpty()) return;
 
 
-        List<CompletableFuture<SendResult<String, OrderNotification>>> futures = events.stream()
+        List<CompletableFuture<SendResult<String, String>>> futures = events.stream()
                 .map(outboxEventService::publishEvent)
                 .toList();
 

@@ -4,7 +4,9 @@ import buloshnaya.orders.entity.OrderEntity;
 import buloshnaya.orders.entity.OutBoxEventEntity;
 import buloshnaya.orders.filter.SearchFilter;
 import buloshnaya.orders.kafka.dto.NotificationType;
+import buloshnaya.orders.kafka.dto.OrderItemDto;
 import buloshnaya.orders.kafka.dto.OrderNotification;
+import buloshnaya.orders.kafka.dto.ReserveStockCommand;
 import buloshnaya.orders.mapper.OrderMapper;
 import buloshnaya.orders.mapper.OrderNotificationMapper;
 import buloshnaya.orders.model.Order;
@@ -71,13 +73,24 @@ public class OrderService {
                 userId,
                 savedEntityOrder, NotificationType.CONFIRMED);
 
-        OutBoxEventEntity outBoxEventEntity = new OutBoxEventEntity();
-        outBoxEventEntity.setOrderId(savedEntityOrder.getId());
-        outBoxEventEntity.setPayload(jsonUtil.toJson(orderNotification));
+        OutBoxEventEntity notificationEvent = new OutBoxEventEntity();
+        notificationEvent.setOrderId(savedEntityOrder.getId());
+        notificationEvent.setTopic("order-notification-topic");
+        notificationEvent.setPayload(jsonUtil.toJson(orderNotification));
+        outBoxEventRepository.save(notificationEvent);
 
-        outBoxEventRepository.save(outBoxEventEntity);
+        var reserveItems = savedEntityOrder.getOrderItemEntities().stream()
+                .map(i -> new OrderItemDto(i.getProductId(), i.getProductName(), i.getPrice(), i.getQuantity()))
+                .toList();
+        ReserveStockCommand reserveCmd = new ReserveStockCommand(savedEntityOrder.getId(), userId, savedEntityOrder.getStoreId(), reserveItems);
 
-        logger.info("OutBoxEventEntity saved: {}", outBoxEventEntity.toString());
+        OutBoxEventEntity reserveEvent = new OutBoxEventEntity();
+        reserveEvent.setOrderId(savedEntityOrder.getId());
+        reserveEvent.setTopic("warehouse-reserve-topic");
+        reserveEvent.setPayload(jsonUtil.toJson(reserveCmd));
+        outBoxEventRepository.save(reserveEvent);
+
+        logger.info("OutBoxEvents saved for orderId={}", savedEntityOrder.getId());
 
         return mapper.toModel(savedEntityOrder);
     }
@@ -104,13 +117,24 @@ public class OrderService {
                 userId,
                 updatedOrderEntity, NotificationType.UPDATED);
 
-        OutBoxEventEntity outBoxEventEntity = new OutBoxEventEntity();
-        outBoxEventEntity.setOrderId(updatedOrderEntity.getId());
-        outBoxEventEntity.setPayload(jsonUtil.toJson(orderNotification));
+        OutBoxEventEntity notificationEvent = new OutBoxEventEntity();
+        notificationEvent.setOrderId(updatedOrderEntity.getId());
+        notificationEvent.setTopic("order-notification-topic");
+        notificationEvent.setPayload(jsonUtil.toJson(orderNotification));
+        outBoxEventRepository.save(notificationEvent);
 
-        outBoxEventRepository.save(outBoxEventEntity);
+        var reserveItems = updatedOrderEntity.getOrderItemEntities().stream()
+                .map(i -> new OrderItemDto(i.getProductId(), i.getProductName(), i.getPrice(), i.getQuantity()))
+                .toList();
+        ReserveStockCommand reserveCmd = new ReserveStockCommand(updatedOrderEntity.getId(), userId, updatedOrderEntity.getStoreId(), reserveItems);
 
-        logger.info("OutBoxEventEntity saved: {}", outBoxEventEntity.toString());
+        OutBoxEventEntity reserveEvent = new OutBoxEventEntity();
+        reserveEvent.setOrderId(updatedOrderEntity.getId());
+        reserveEvent.setTopic("warehouse-reserve-topic");
+        reserveEvent.setPayload(jsonUtil.toJson(reserveCmd));
+        outBoxEventRepository.save(reserveEvent);
+
+        logger.info("OutBoxEvents saved for orderId={}", updatedOrderEntity.getId());
 
         return mapper.toModel(updatedOrderEntity);
 

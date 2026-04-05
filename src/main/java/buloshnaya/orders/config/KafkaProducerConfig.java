@@ -1,7 +1,5 @@
 package buloshnaya.orders.config;
 
-import buloshnaya.orders.kafka.dto.OrderNotification;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -12,15 +10,12 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
 public class KafkaProducerConfig {
-
-
 
     @Bean
     public NewTopic orderNotificationTopic(
@@ -31,23 +26,25 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public ProducerFactory<String, OrderNotification> producerFactory(
-            ObjectMapper objectMapper
-    )  {
+    public NewTopic warehouseReserveTopic(
+            @Value("${kafka.topic.warehouse-reserve}") String topicName
+    ) {
+        return TopicBuilder.name(topicName).partitions(4).replicas(1).build();
+    }
+
+    @Bean
+    public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> configProperties = new HashMap<>();
         configProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         configProperties.put(ProducerConfig.LINGER_MS_CONFIG, 50);
         configProperties.put(ProducerConfig.BATCH_SIZE_CONFIG, 32768);
 
-        JsonSerializer<OrderNotification> serializer = new JsonSerializer<>(objectMapper);
-        serializer.setAddTypeInfo(false);
-
-        return new DefaultKafkaProducerFactory<>(configProperties, new StringSerializer(), serializer);
+        return new DefaultKafkaProducerFactory<>(configProperties, new StringSerializer(), new StringSerializer());
     }
 
     @Bean
-    public KafkaTemplate<String, OrderNotification> kafkaTemplate(
-            ProducerFactory<String, OrderNotification> producerFactory
+    public KafkaTemplate<String, String> kafkaTemplate(
+            ProducerFactory<String, String> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }

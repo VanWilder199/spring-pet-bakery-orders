@@ -21,6 +21,9 @@ public class OutBoxEventEntity {
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
+    @Column(name = "topic", nullable = false)
+    private String topic;
+
     @Column(name = "payload", columnDefinition = "TEXT", nullable = false)
     private String payload;
 

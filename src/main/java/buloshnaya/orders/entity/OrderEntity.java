@@ -25,6 +25,9 @@ public class OrderEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    @Column(name = "store_id", nullable = false)
+    private UUID storeId;
+
     // BatchSize resolved N+1 problem (should remember every time)
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
